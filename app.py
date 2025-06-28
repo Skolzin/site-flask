@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from docx import Document
+from dropbox_uploader import upload_to_dropbox
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
@@ -13,9 +14,14 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 USERS = {
-    'Prime': {'senha': '12345', 'role': 'admin'},
-    'op1': {'senha': '12345', 'role': 'funcionario'},
-    'op2': {'senha': '12345', 'role': 'funcionario'},
+    'Lucas': {'senha': '12345', 'role': 'admin'},
+    'Andre': {'senha': '12345', 'role': 'admin'},
+    'Erismar': {'senha': '0421', 'role': 'admin'},
+    'Loja1': {'senha': '12345', 'role': 'admin'},
+    'Josuel': {'senha': '1999', 'role': 'admin'},
+    'Celso': {'senha': '030257', 'role': 'funcionario'},
+    'Leidvan': {'senha': '12345', 'role': 'funcionario'},
+    'Henrique': {'senha': '2403', 'role': 'funcionario'},
 }
 
 EQUIPAMENTOS = [
@@ -109,6 +115,14 @@ def checklist(equipamento):
         nome_doc = f'checklist_{equipamento}_{datetime.now().strftime("%Y%m%d%H%M%S")}_{session["user"]}.docx'
         caminho_doc = os.path.join(pasta, nome_doc)
         doc.save(caminho_doc)
+
+        # Envia ao Dropbox
+        dropbox_path = f"/checklists/{nome_doc}"
+        try:
+            link = upload_to_dropbox(caminho_doc, dropbox_path)
+            print(f"📁 Checklist enviado ao Dropbox com sucesso! Link: {link}")
+        except Exception as e:
+            print(f"⚠️ Erro ao enviar para o Dropbox: {e}")
 
         flash('Checklist salvo com sucesso!', 'success')
         return redirect(url_for('dashboard'))
